@@ -14,6 +14,7 @@
 		0DB8C7C72A1CEB1B009EC720 /* Loan_CalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB8C7C62A1CEB1B009EC720 /* Loan_CalculatorTests.swift */; };
 		0DB8C7D12A1CEB1B009EC720 /* Loan_CalculatorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB8C7D02A1CEB1B009EC720 /* Loan_CalculatorUITests.swift */; };
 		0DB8C7D32A1CEB1B009EC720 /* Loan_CalculatorUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB8C7D22A1CEB1B009EC720 /* Loan_CalculatorUITestsLaunchTests.swift */; };
+		0DB8C7E02A1D286B009EC720 /* Formater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB8C7DF2A1D286B009EC720 /* Formater.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 		0DB8C7CC2A1CEB1B009EC720 /* Loan CalculatorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Loan CalculatorUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DB8C7D02A1CEB1B009EC720 /* Loan_CalculatorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loan_CalculatorUITests.swift; sourceTree = "<group>"; };
 		0DB8C7D22A1CEB1B009EC720 /* Loan_CalculatorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loan_CalculatorUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		0DB8C7DF2A1D286B009EC720 /* Formater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formater.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +100,7 @@
 				0DB8C7B72A1CEB1A009EC720 /* ContentView.swift */,
 				0DB8C7B92A1CEB1B009EC720 /* Assets.xcassets */,
 				0DB8C7BB2A1CEB1B009EC720 /* Preview Content */,
+				0DB8C7DF2A1D286B009EC720 /* Formater.swift */,
 			);
 			path = "Loan Calculator";
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 			files = (
 				0DB8C7B82A1CEB1A009EC720 /* ContentView.swift in Sources */,
 				0DB8C7B62A1CEB1A009EC720 /* Loan_CalculatorApp.swift in Sources */,
+				0DB8C7E02A1D286B009EC720 /* Formater.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
