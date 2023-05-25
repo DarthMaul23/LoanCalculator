@@ -12,6 +12,9 @@ struct ContentView: View {
     @State private var isShowingPicker = false
     @State private var cancellables = Set<AnyCancellable>()
     
+    @State private var mortgagePaymentDetailsWithBanks: [MortgagePaymentWithBankDetails] = []
+    @State private var isShowingModal = false
+    
     let cenaNemovitostiRange = 300000...10000000
     let monthsRange = 5...30
     let fixaceOptions = [1, 3, 5, 7, 10]
@@ -134,10 +137,11 @@ struct ContentView: View {
                 }
                 
                 Button(action: {
-                    calculateMortgage { result in
+                    calculateMortgagePaymentWithBanks { result in
                         switch result {
-                        case .success(let mortgagePayment):
-                            print("Mortgage Payment: \(mortgagePayment)")
+                        case .success(let paymentDetailsWithBanks):
+                            mortgagePaymentDetailsWithBanks = paymentDetailsWithBanks
+                            isShowingModal = true
                         case .failure(let error):
                             print("Error: \(error)")
                         }
@@ -154,6 +158,27 @@ struct ContentView: View {
             .padding()
             .padding(.top, 50)
             .padding()
+            .sheet(isPresented: $isShowingModal) {
+                VStack {
+                    Text("Nabídky")
+                        .font(.title)
+                        .padding()
+                    
+                    List(mortgagePaymentDetailsWithBanks, id: \.bank.name) { paymentWithBank in
+                        VStack(alignment: .leading) {
+                            Text(paymentWithBank.bank.name)
+                                .font(.headline)
+                            Text("Úrok: \(paymentWithBank.bank.interestRate)%")
+                            Text("Splátka: \(paymentWithBank.monthlyPayment, specifier: "%.2f")")
+                        }
+                        .padding()
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(10)
+                        .padding(.vertical, 5)
+                    }
+                }
+            }
+            
             .tabItem {
                 Image(systemName: "house.fill")
                 Text("Hypoteční úvěr")
@@ -190,42 +215,41 @@ struct ContentView: View {
         let input = MortgageInput(
             PropertyValue: cenaNemovitosti,
             LoanAmount: vyseUveru,
-            LoanTerm: selectedYears,
-            InterestRate: 3.71
+            LoanTerm: selectedYears
         )
-
+        
         guard let url = URL(string: "http://localhost:5114/api/mortgage") else {
             completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
             return
         }
-
+        
         guard let jsonData = try? JSONEncoder().encode(input) else {
             completion(.failure(NSError(domain: "Encoding error", code: -1, userInfo: nil)))
             return
         }
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
-
+            
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 completion(.failure(NSError(domain: "Invalid response", code: -1, userInfo: nil)))
                 return
             }
-
+            
             guard let data = data else {
                 completion(.failure(NSError(domain: "Empty response data", code: -1, userInfo: nil)))
                 return
             }
-
+            
             do {
                 let result = try JSONDecoder().decode(Double.self, from: data)
                 completion(.success(result))
@@ -234,7 +258,159 @@ struct ContentView: View {
             }
         }.resume()
     }
-
+    
+    func calculateMortgagePaymentWithBanks(completion: @escaping (Result<[MortgagePaymentWithBankDetails], Error>) -> Void) {
+        let input = MortgageInput(
+            PropertyValue: cenaNemovitosti,
+            LoanAmount: vyseUveru,
+            LoanTerm: selectedYears
+        )
+        guard let url = URL(string: "http://localhost:5114/api/mortgage/mortgage-payment-with-banks") else {
+            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
+            return
+        }
+        
+        guard let jsonData = try? JSONEncoder().encode(input) else {
+            completion(.failure(NSError(domain: "Encoding error", code: -1, userInfo: nil)))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                completion(.failure(NSError(domain: "Invalid response", code: -1, userInfo: nil)))
+                return
+            }
+            
+            guard let data = data else {
+                completion(.failure(NSError(domain: "Empty response data", code: -1, userInfo: nil)))
+                return
+            }
+            
+            do {
+                let result = try JSONDecoder().decode([MortgagePaymentWithBankDetails].self, from: data)
+                print(result)
+                completion(.success(result))
+            } catch {
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+    
+    
+    struct Bank: Codable {
+        let name: String
+        let interestRate: Double
+        let loanFee: Double
+        let sale: Double
+        let insurance: Double
+    }
+    
+    struct MortgagePaymentWithBankDetails: Codable {
+        let bank: Bank
+        let totalPayment: Double
+        let monthlyPayment: Double
+    }
+    
+    struct BankListView: View {
+        @State private var bankDetails: [MortgagePaymentWithBankDetails] = []
+        @State private var showModal: Bool = false
+        @State private var selectedBank: MortgagePaymentWithBankDetails?
+        
+        var body: some View {
+            List(bankDetails, id: \.bank.name) { bankDetail in
+                Button(action: {
+                    selectedBank = bankDetail
+                    showModal = true
+                }) {
+                    VStack(alignment: .leading) {
+                        Text(bankDetail.bank.name)
+                            .font(.headline)
+                        Text("Total Payment: \(bankDetail.totalPayment)")
+                            .font(.subheadline)
+                        Text("Interest Rate: \(bankDetail.bank.interestRate)%")
+                            .font(.subheadline)
+                        Text("Monthly Payment: \(bankDetail.monthlyPayment)")
+                            .font(.subheadline)
+                    }
+                }
+            }
+            .sheet(isPresented: $showModal) {
+                if let selectedBank = selectedBank {
+                    BankDetailView(bankDetail: selectedBank)
+                }
+            }
+            .onAppear {
+                fetchBankDetails()
+            }
+        }
+        
+        struct BankDetailView: View {
+            let bankDetail: MortgagePaymentWithBankDetails
+            
+            var body: some View {
+                VStack(alignment: .leading) {
+                    Text(bankDetail.bank.name)
+                        .font(.title)
+                        .padding(.bottom, 10)
+                    Text("Interest Rate: \(bankDetail.bank.interestRate)%")
+                        .font(.subheadline)
+                        .padding(.bottom, 5)
+                    Text("Total Payment: \(bankDetail.totalPayment)")
+                        .font(.subheadline)
+                        .padding(.bottom, 5)
+                    Text("Monthly Payment: \(bankDetail.monthlyPayment)")
+                        .font(.subheadline)
+                        .padding(.bottom, 5)
+                    
+                    // Add more payment details components here
+                }
+                .padding()
+            }
+        }
+        
+        func fetchBankDetails() {
+            // Perform the API request to fetch bank details
+            // Replace "YOUR_API_ENDPOINT" with the actual endpoint URL
+            guard let url = URL(string: "YOUR_API_ENDPOINT/mortgage-payment-with-banks") else {
+                print("Invalid URL")
+                return
+            }
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Error: \(error)")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("Empty response data")
+                    return
+                }
+                
+                do {
+                    let decoder = JSONDecoder()
+                    decoder.keyDecodingStrategy = .convertFromSnakeCase
+                    let result = try decoder.decode([MortgagePaymentWithBankDetails].self, from: data)
+                    DispatchQueue.main.async {
+                        self.bankDetails = result
+                    }
+                } catch {
+                    print("Decoding error: \(error)")
+                }
+            }.resume()
+        }
+    }
     
     // Custom modifier to restrict input to numeric values
     struct NumericKeyboardModifier: ViewModifier {
@@ -268,10 +444,10 @@ struct ContentView: View {
         let PropertyValue: Double
         let LoanAmount: Double
         let LoanTerm: Int
-        let InterestRate: Double
     }
     
     struct MortgageResult: Codable {
         let mortgagePayment: Double
     }
+    
 }
