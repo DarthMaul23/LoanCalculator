@@ -5,10 +5,10 @@ struct ContentView: View {
     @State private var tabSelection = 0
     @State private var cenaNemovitosti: Double = 300000
     @State private var vyseUveru: Double = 0
-    @State private var years = 5
+    @State private var years = 30
     @State private var fixace = 1
     @State private var lvt: Double = 0
-    @State private var selectedYears = 5
+    @State private var selectedYears = 30
     @State private var isShowingPicker = false
     @State private var cancellables = Set<AnyCancellable>()
     
@@ -168,8 +168,12 @@ struct ContentView: View {
                         VStack(alignment: .leading) {
                             Text(paymentWithBank.bank.name)
                                 .font(.headline)
-                            Text("Úrok: \(paymentWithBank.bank.interestRate)%")
-                            Text("Splátka: \(paymentWithBank.monthlyPayment, specifier: "%.2f")")
+                            Text("Úrok: \(paymentWithBank.bank.interestRate, specifier: "%.2f") %")
+                            Text("Hypotéka: \(paymentWithBank.loanAmount, specifier: "%.2f") Kč")
+                            Text("Doba: \(paymentWithBank.loanTerm, specifier: "%.2f") Let")
+                            Text("Měsíční splátka: \(paymentWithBank.monthlyPayment, specifier: "%.2f") Kč")
+                            Text("Celková cena: \(paymentWithBank.totalPayment, specifier: "%.2f") Kč")
+                            Text("Přeplaceno: \(paymentWithBank.overPayment, specifier: "%.2f") Kč")
                         }
                         .padding()
                         .background(Color.gray.opacity(0.1))
@@ -307,7 +311,6 @@ struct ContentView: View {
         }.resume()
     }
     
-    
     struct Bank: Codable {
         let name: String
         let interestRate: Double
@@ -320,6 +323,9 @@ struct ContentView: View {
         let bank: Bank
         let totalPayment: Double
         let monthlyPayment: Double
+        let loanAmount: Double
+        let loanTerm: Double
+        let overPayment: Double
     }
     
     struct BankListView: View {
@@ -366,14 +372,21 @@ struct ContentView: View {
                     Text("Interest Rate: \(bankDetail.bank.interestRate)%")
                         .font(.subheadline)
                         .padding(.bottom, 5)
+                    Text("Loan Amount: \(bankDetail.loanAmount)")
+                        .font(.subheadline)
+                        .padding(.bottom, 5)
+                    Text("Loan Term: \(bankDetail.loanTerm) years")
+                        .font(.subheadline)
+                        .padding(.bottom, 5)
                     Text("Total Payment: \(bankDetail.totalPayment)")
                         .font(.subheadline)
                         .padding(.bottom, 5)
                     Text("Monthly Payment: \(bankDetail.monthlyPayment)")
                         .font(.subheadline)
                         .padding(.bottom, 5)
-                    
-                    // Add more payment details components here
+                    Text("Overpayment: \(bankDetail.overPayment)")
+                        .font(.subheadline)
+                        .padding(.bottom, 5)
                 }
                 .padding()
             }
@@ -449,5 +462,4 @@ struct ContentView: View {
     struct MortgageResult: Codable {
         let mortgagePayment: Double
     }
-    
 }
