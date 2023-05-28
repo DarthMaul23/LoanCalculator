@@ -8,14 +8,17 @@ struct ContentView: View {
     @State private var years = 30
     @State private var fixace = 1
     @State private var lvt: Double = 0
+    @State private var interestRate: Double = 1.0
+    @State private var interestRateString: String = "1.0"
     @State private var selectedYears = 30
     @State private var isShowingPicker = false
     @State private var cancellables = Set<AnyCancellable>()
+    @State private var mortgageDetailsList = [MortgageDetails]()
     
     @State private var mortgagePaymentDetailsWithBanks: [MortgagePaymentWithBankDetails] = []
     @State private var isShowingModal = false
     
-    let cenaNemovitostiRange = 300000...10000000
+    let cenaNemovitostiRange = 30000...10000000
     let monthsRange = 5...30
     let fixaceOptions = [1, 3, 5, 7, 10]
     
@@ -31,7 +34,7 @@ struct ContentView: View {
             // First Tab - User Inputs
             VStack {
                 VStack(alignment: .leading) {
-                    Text("Cena nemovitosti:")
+                    Text("Property:")
                     TextField("Enter value", text: Binding(
                         get: {
                             formatter.formatNumber(cenaNemovitosti)
@@ -45,8 +48,8 @@ struct ContentView: View {
                     ))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.numberPad)
-                    Slider(value: $cenaNemovitosti, in: 300000...10000000, step: 100000, minimumValueLabel: Text("\(Int(cenaNemovitostiRange.lowerBound)) Kč"), maximumValueLabel: Text(formatter.formatNumberString("\(Int(cenaNemovitostiRange.upperBound))")+" Kč")) {
-                        Text("Cena nemovitosti")
+                    Slider(value: $cenaNemovitosti, in: 30000...35000000, step: 50000, minimumValueLabel: Text("$ \(Int(cenaNemovitostiRange.lowerBound))"), maximumValueLabel: Text(formatter.formatNumberString("$ \(Int(cenaNemovitostiRange.upperBound))")+"")) {
+                        Text("Property value")
                     }
                     .onChange(of: cenaNemovitosti) { value in
                         vyseUveru = cenaNemovitosti * _defaultLVT
@@ -55,7 +58,7 @@ struct ContentView: View {
                 }
                 
                 VStack(alignment: .leading) {
-                    Text("Výše úvěru:")
+                    Text("Mortgage:")
                     TextField("Enter value", text: Binding(
                         get: {
                             formatter.formatNumberString(String(format: "%.0f", vyseUveru))
@@ -69,8 +72,8 @@ struct ContentView: View {
                     ))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.numberPad)
-                    Slider(value: $vyseUveru, in: 0...(cenaNemovitosti * _defaultLVT), step: 100000, minimumValueLabel: Text("0 Kč"), maximumValueLabel:  Text(formatter.formatNumberString("\(Int(cenaNemovitosti * _defaultLVT))")+"Kč")) {
-                        Text("Výše úvěru")
+                    Slider(value: $vyseUveru, in: 0...(cenaNemovitosti * _defaultLVT), step: 10000, minimumValueLabel: Text("$ 0 "), maximumValueLabel:  Text(formatter.formatNumberString("$ \(Int(cenaNemovitosti * _defaultLVT))")+"")) {
+                        Text("Mortgage")
                     }
                     .onChange(of: vyseUveru) { value in
                         lvt = round((vyseUveru/cenaNemovitosti)*100)
@@ -82,7 +85,7 @@ struct ContentView: View {
                 }.padding(.top, 15)
                 
                 VStack(alignment: .leading) {
-                    Text("Doba splácení:")
+                    Text("Mortgage duration:")
                     HStack{
                         TextField("Enter value", text: Binding(
                             get: { String(selectedYears) },
@@ -99,9 +102,9 @@ struct ContentView: View {
                         }
                         .sheet(isPresented: $isShowingPicker) {
                             VStack {
-                                Text("Doba splácení:")
+                                Text("Mortgage length")
                                 HStack{
-                                    Picker(selection: $selectedYears, label: Text("Doba splácení")) {
+                                    Picker(selection: $selectedYears, label: Text("Mortgage length:")) {
                                         ForEach(5...30, id: \.self) { year in
                                             Text("\(year)")
                                         }
@@ -116,32 +119,50 @@ struct ContentView: View {
                                 .padding()
                             }
                         }
-                        Text("let")
+                        Text("Years")
                     }
                 }
                 .padding(.top, 15)
+                /*
+                 HStack {
+                 VStack {
+                 Text("Interest Rate:")
+                 TextField("Interest Rate", text: Binding<String>(
+                 get: { "\(interestRate)" },
+                 set: { interestRate = Double($0) ?? 0 }
+                 ))
+                 .keyboardType(.decimalPad)
+                 .foregroundColor(.blue)
+                 .frame(maxWidth: .infinity)
+                 }
+                 }
+                 */
                 
                 HStack {
-                    VStack {
-                        Text("Fixace:")
-                        Picker(selection: $fixace, label: Text("Fixace")) {
-                            ForEach(fixaceOptions.indices, id: \.self) { index in
-                                Text("\(fixaceOptions[index]) \(index == 0 ? "rok" : (index == 1 ? "roky" : "let"))")
-                                    .foregroundColor(fixace == index ? .blue : .primary)
-                            }
+                    VStack(alignment: .leading) {
+                        Text("Interest Rate %:")
+                        HStack {
+                            TextField("Enter value", text: $interestRateString)
+                                .textFieldStyle(.roundedBorder)
+                                .keyboardType(.decimalPad)
+                            
                         }
-                        .pickerStyle(.inline)
-                        .frame(maxWidth: .infinity)
+                        .padding(.top, 15)
                     }
-                    
+                    .onReceive(Just(interestRateString)) { value in
+                        if let decimalValue = Decimal(string: value) {
+                            interestRate = NSDecimalNumber(decimal: decimalValue).doubleValue
+                        }
+                    }
                 }
-                
                 Button(action: {
-                    calculateMortgagePaymentWithBanks { result in
+                    calculateMortgage { result in
                         switch result {
-                        case .success(let paymentDetailsWithBanks):
-                            mortgagePaymentDetailsWithBanks = paymentDetailsWithBanks
-                            isShowingModal = true
+                        case .success(let mortgageDetailsList):
+                            DispatchQueue.main.async {
+                                self.mortgageDetailsList = mortgageDetailsList // Assuming the result is an array of MortgageDetails objects
+                                isShowingModal = true
+                            }
                         case .failure(let error):
                             print("Error: \(error)")
                         }
@@ -160,155 +181,145 @@ struct ContentView: View {
             .padding()
             .sheet(isPresented: $isShowingModal) {
                 VStack {
-                    Text("Nabídky")
-                        .font(.title)
-                        .padding()
-                    
-                    List(mortgagePaymentDetailsWithBanks, id: \.bank.name) { paymentWithBank in
-                        VStack(alignment: .leading) {
-                            Text(paymentWithBank.bank.name)
-                                .font(.headline)
-                            Text("Úrok: \(paymentWithBank.bank.interestRate, specifier: "%.2f") %")
-                            Text("Hypotéka: \(paymentWithBank.loanAmount, specifier: "%.2f") Kč")
-                            Text("Doba: \(paymentWithBank.loanTerm, specifier: "%.2f") Let")
-                            Text("Měsíční splátka: \(paymentWithBank.monthlyPayment, specifier: "%.2f") Kč")
-                            Text("Celková cena: \(paymentWithBank.totalPayment, specifier: "%.2f") Kč")
-                            Text("Přeplaceno: \(paymentWithBank.overPayment, specifier: "%.2f") Kč")
+                    VStack {
+                        Text("Detail")
+                            .font(.title)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                        
+                        Section(header: Text("Additional Info")) {
+                            VStack(alignment: .leading) {
+                                Text("Mortgage: Value 1")
+                                Text("Interest: Value 2")
+                                Text("Total: Value 3")
+                            }
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(10)
                         }
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(10)
-                        .padding(.vertical, 5)
+                    }
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    
+                    List {
+                        Section(header: Text("Mortgage Details")) {
+                            ForEach(mortgageDetailsList, id: \.paymentDate) { mortgageDetail in
+                                VStack(alignment: .leading) {
+                                    Text("Payment Date: \(formatter.formatDate(mortgageDetail.paymentDate))")
+                                        .font(.headline)
+                                    
+                                    Group {
+                                        Text("Already Paid: \(mortgageDetail.alreadyPaid, specifier: "%.2f")")
+                                        Text("Remaining to be Paid: \(mortgageDetail.remainingToBePaid, specifier: "%.2f")")
+                                        Text("Interest Rate: \(mortgageDetail.interestRateValue, specifier: "%.2f")%")
+                                        Text("Monthly Payment: \(mortgageDetail.monthlyPayment ?? 0, specifier: "%.2f")")
+                                    }
+                                    .font(.subheadline)
+                                }
+                                .padding()
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(10)
+                                .padding(.vertical, 5)
+                            }
+                        }
                     }
                 }
+
             }
             
             .tabItem {
                 Image(systemName: "house.fill")
-                Text("Hypoteční úvěr")
+                Text("Mortgage")
             }
             .tag(0)
             
             // Second Tab - Calculation Details
             VStack {
                 // Add your calculation detail components here
-                Text("Spotřebitelský úvěr")
+                Text("Personal loan")
             }
             .padding()
             .tabItem {
                 Image(systemName: "person.fill")
-                Text("Spotřebitelský úvěr")
+                Text("Personal loan")
             }
             .tag(1)
             
             // Third Tab - Data Table
             VStack {
                 // Add your table components here
-                Text("Nastavení")
+                Text("Settings")
             }
             .padding()
             .tabItem {
                 Image(systemName: "gear")
-                Text("Nastavení")
+                Text("Settings")
             }
             .tag(2)
         }
     }
     
-    func calculateMortgage(completion: @escaping (Result<Double, Error>) -> Void) {
+    func calculateMortgage(completion: @escaping (Result<[MortgageDetails], Error>) -> Void) {
         let input = MortgageInput(
             PropertyValue: cenaNemovitosti,
             LoanAmount: vyseUveru,
-            LoanTerm: selectedYears
+            LoanTerm: selectedYears,
+            InterestRate: interestRate
         )
+        print(interestRate)
+        let loanAmount = input.LoanAmount
+        let interestRate = input.InterestRate
+        let loanTerm = input.LoanTerm
         
-        guard let url = URL(string: "http://localhost:5114/api/mortgage") else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
-            return
+        let numberOfPayments = loanTerm * 12
+        
+        var mortgageDetailsList = [MortgageDetails]() // Initialize an empty array
+        
+        var remainingBalance = loanAmount
+        let monthlyInterestRate = interestRate / 100
+        let monthlyPayment = loanAmount * (monthlyInterestRate / (1 - pow(1 + monthlyInterestRate, -Double(numberOfPayments))))
+        
+        for month in 1...numberOfPayments {
+            let interestPayment = remainingBalance * monthlyInterestRate / 12
+            let principalPayment = monthlyPayment - interestPayment
+            
+            remainingBalance -= principalPayment
+            
+            let paymentDate = Date().addingTimeInterval(Double(month) * 30 * 24 * 60 * 60) // Assuming 30 days per month
+            let alreadyPaid = loanAmount - remainingBalance
+            let remainingToBePaid = remainingBalance
+            let interestRateValue = interestRate
+            
+            let mortgageDetails = MortgageDetails(
+                paymentDate: paymentDate,
+                alreadyPaid: alreadyPaid,
+                remainingToBePaid: remainingToBePaid,
+                interestRateValue: interestRateValue,
+                monthlyPayment: monthlyPayment
+            )
+            
+            mortgageDetailsList.append(mortgageDetails) // Add the MortgageDetails object to the array
         }
         
-        guard let jsonData = try? JSONEncoder().encode(input) else {
-            completion(.failure(NSError(domain: "Encoding error", code: -1, userInfo: nil)))
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                completion(.failure(NSError(domain: "Invalid response", code: -1, userInfo: nil)))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "Empty response data", code: -1, userInfo: nil)))
-                return
-            }
-            
-            do {
-                let result = try JSONDecoder().decode(Double.self, from: data)
-                completion(.success(result))
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
+        completion(.success(mortgageDetailsList)) // Return the array of MortgageDetails objects
     }
     
     func calculateMortgagePaymentWithBanks(completion: @escaping (Result<[MortgagePaymentWithBankDetails], Error>) -> Void) {
         let input = MortgageInput(
             PropertyValue: cenaNemovitosti,
             LoanAmount: vyseUveru,
-            LoanTerm: selectedYears
+            LoanTerm: selectedYears,
+            InterestRate: interestRate
         )
-        guard let url = URL(string: "http://localhost:5114/api/mortgage/mortgage-payment-with-banks") else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
-            return
-        }
-        
-        guard let jsonData = try? JSONEncoder().encode(input) else {
-            completion(.failure(NSError(domain: "Encoding error", code: -1, userInfo: nil)))
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                completion(.failure(NSError(domain: "Invalid response", code: -1, userInfo: nil)))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "Empty response data", code: -1, userInfo: nil)))
-                return
-            }
-            
-            do {
-                let result = try JSONDecoder().decode([MortgagePaymentWithBankDetails].self, from: data)
-                print(result)
-                completion(.success(result))
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
+    }
+    
+    struct MortgageDetails {
+        let paymentDate: Date
+        let alreadyPaid: Double
+        let remainingToBePaid: Double
+        let interestRateValue: Double
+        let monthlyPayment: Double?
     }
     
     struct Bank: Codable {
@@ -457,6 +468,7 @@ struct ContentView: View {
         let PropertyValue: Double
         let LoanAmount: Double
         let LoanTerm: Int
+        let InterestRate: Double
     }
     
     struct MortgageResult: Codable {
