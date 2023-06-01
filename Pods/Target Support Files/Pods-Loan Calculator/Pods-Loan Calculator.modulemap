@@ -1,0 +1,6 @@
+framework module Pods_Loan_Calculator {
+  umbrella header "Pods-Loan Calculator-umbrella.h"
+
+  export *
+  module * { export * }
+}
