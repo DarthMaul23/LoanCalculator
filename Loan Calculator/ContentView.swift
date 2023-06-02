@@ -6,6 +6,7 @@ struct ContentView: View {
     @State private var tabSelection = 0
     @State private var cenaNemovitosti: Double = 300000
     @State private var personalLoan: Double = 300000
+    @State private var personalLoanTotal: Double = 300000
     @State private var vyseUveru: Double = 0
     @State private var vyseUveru2: Double = 0
     @State private var years = 30
@@ -98,7 +99,7 @@ struct ContentView: View {
                             vyseUveru = cenaNemovitosti * _defaultLVT
                         }
                     }
-                    Text("LVT: \(String(format: "%.0f", lvt))%")
+                    Text("LTV: \(String(format: "%.0f", lvt))%")
                 }.padding(.top, 15)
                 
                 VStack(alignment: .leading) {
@@ -158,18 +159,26 @@ struct ContentView: View {
                 HStack {
                     VStack(alignment: .leading) {
                         Text("Interest Rate %:")
-                        HStack {
-                            TextField("Enter value", text: $interestRateString)
-                                .textFieldStyle(.roundedBorder)
-                                .keyboardType(.decimalPad)
+                        VStack {
+                            TextField("Enter value", text: Binding(
+                                get: {
+                                    formatter.formatNumberString(String(format: "%.2f", interestRate))
+                                },
+                                set: { newValue in
+                                    let sanitizedValue = newValue.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+                                    if let value = Double(sanitizedValue) {
+                                        interestRate = value/100
+                                    }
+                                }
+                            ))
+                            .textFieldStyle(.roundedBorder)
+                            .keyboardType(.decimalPad)
                             
+                            Slider(value: $interestRate, in: 0...30, step: 0.25, minimumValueLabel: Text("% \(Int(0))"), maximumValueLabel: Text("% \(Int(30))")) {
+                                Text("Property value")
+                            }
                         }
                         .padding(.top, 15)
-                    }
-                    .onReceive(Just(interestRateString)) { value in
-                        if let decimalValue = Decimal(string: value) {
-                            interestRate = NSDecimalNumber(decimal: decimalValue).doubleValue
-                        }
                     }
                 }
                 Button(action: {
@@ -197,54 +206,79 @@ struct ContentView: View {
             .padding(.top, 50)
             .padding()
             .sheet(isPresented: $isShowingModal) {
-                if (mortgageDetailsList.count>0){
-                    let dataPoints: [DataPoint] = [
-                        DataPoint(value: vyseUveru - mortgageDetailsList[mortgageDetailsList.count - 1].alreadyPaid, label: "Úrok"),
-                        DataPoint(value: vyseUveru, label: "Úvěr")
-                    ]
-                    
-                    VStack {
+                if mortgageDetailsList.count > 0 {
+                    TabView {
+                        
+                        let _monthlyPayment: Double = calculateTotalLoanPayment(loanAmount: vyseUveru, interestRate: interestRate, loanDurationInMonths: (selectedYears*12))/(Double(selectedYears*12))
+                        
+                        let _totalPayment: Double = calculateTotalLoanPayment(loanAmount: vyseUveru, interestRate: interestRate, loanDurationInMonths: selectedYears*12)
+                        
+                        let dataPoints: [DataPoint] = [
+                                               DataPoint(value: _totalPayment-vyseUveru, label: "Úrok"),
+                                               DataPoint(value: vyseUveru, label: "Úvěr")
+                                           ]
+                        // First Tab: Chart
                         VStack {
                             Text("Calculation Detail")
                                 .font(.title)
                                 .padding()
                                 .frame(maxWidth: .infinity)
                             
-                            Section() {
+                            Section {
                                 PieChartWrapper(dataPoints: dataPoints)
-                                    .frame(width: 250, height: 250)
+                                    .frame(width: 370, height: 250)
                                     .padding(.top, -20)
                             }
+                            VStack(alignment: .leading, spacing: 8) {
+                                                Text("Monthly Payment: \(_monthlyPayment, specifier: "%.2f")")
+                                                Text("Loan Amount: \(vyseUveru, specifier: "%.2f")")
+                                                Text("Total Paid Amount: \(_totalPayment, specifier: "%.2f")")
+                                                Text("Interest Rate: \(interestRate, specifier: "%.2f")%")
+                                                Text("Interest Paid: \(round(_totalPayment-vyseUveru), specifier: "%.2f")")
+                                                Text("Duration: \(selectedYears) years")
+                                            }
+                                            .font(.subheadline)
+                                            .padding(.top, 20)
                         }
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                    }
-                    List {
-                        Section(header: Text("Mortgage Details")) {
-                            ForEach(mortgageDetailsList, id: \.paymentDate) { mortgageDetail in
-                                VStack(alignment: .leading) {
-                                    Text("Payment Date: \(formatter.formatDate(mortgageDetail.paymentDate))")
-                                        .font(.headline)
-                                    
-                                    Group {
-                                        Text("Already Paid: \(mortgageDetail.alreadyPaid, specifier: "%.2f")")
-                                        Text("Remaining to be Paid: \(mortgageDetail.remainingToBePaid, specifier: "%.2f")")
-                                        Text("Interest Rate: \(mortgageDetail.interestRateValue, specifier: "%.2f")%")
-                                        Text("Monthly Payment: \(mortgageDetail.monthlyPayment ?? 0, specifier: "%.2f")")
+                        .tabItem {
+                            Image(systemName: "chart.pie.fill")
+                            Text("Chart")
+                        }
+                        
+                        // Second Tab: List of Payments
+                        List {
+                            Section(header: Text("Mortgage Details")) {
+                                ForEach(mortgageDetailsList, id: \.paymentDate) { mortgageDetail in
+                                    VStack(alignment: .leading) {
+                                        Text("Payment Date: \(formatter.formatDate(mortgageDetail.paymentDate))")
+                                            .font(.headline)
+                                        
+                                        Group {
+                                            Text("Already Paid: \(mortgageDetail.alreadyPaid, specifier: "%.2f")")
+                                            Text("Remaining to be Paid: \(mortgageDetail.remainingToBePaid, specifier: "%.2f")")
+                                            Text("Interest Rate: \(mortgageDetail.interestRateValue, specifier: "%.2f")%")
+                                            Text("Monthly Payment: \(mortgageDetail.monthlyPayment ?? 0, specifier: "%.2f")")
+                                        }
+                                        .font(.subheadline)
                                     }
-                                    .font(.subheadline)
+                                    .padding()
+                                    .background(Color.gray.opacity(0.1))
+                                    .cornerRadius(10)
+                                    .padding(.vertical, 5)
                                 }
-                                .padding()
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(10)
-                                .padding(.vertical, 5)
                             }
+                        }
+                        .tabItem {
+                            Image(systemName: "list.bullet")
+                            Text("Payments")
                         }
                     }
                 }
-                
             }
+
             
             .tabItem {
                 Image(systemName: "house.fill")
@@ -352,7 +386,7 @@ struct ContentView: View {
                     }
                     .onReceive(Just(loanInterestRateString)) { value in
                         if let decimalValue = Decimal(string: value) {
-                            interestRate = NSDecimalNumber(decimal: decimalValue).doubleValue
+                            loanInterestRate = NSDecimalNumber(decimal: decimalValue).doubleValue
                         }
                     }
                 }
@@ -383,8 +417,8 @@ struct ContentView: View {
             .sheet(isPresented: $isShowingModal) {
                 if (mortgageDetailsList.count>0){
                     let dataPoints: [DataPoint] = [
-                        DataPoint(value: mortgageDetailsList[mortgageDetailsList.count - 1].alreadyPaid - vyseUveru, label: "Úrok"),
-                        DataPoint(value: vyseUveru, label: "Úvěr")
+                        DataPoint(value: round(personalLoanTotal - personalLoan), label: "Úrok"),
+                        DataPoint(value: round(personalLoanTotal), label: "Úvěr")
                     ]
                     
                     VStack {
@@ -461,7 +495,7 @@ struct ContentView: View {
             LoanTerm: selectedYears,
             InterestRate: interestRate
         )
-        print(interestRate)
+        
         let loanAmount = input.LoanAmount
         let interestRate = input.InterestRate
         let loanTerm = input.LoanTerm
@@ -471,18 +505,19 @@ struct ContentView: View {
         var mortgageDetailsList = [MortgageDetails]() // Initialize an empty array
         
         var remainingBalance = loanAmount
-        let monthlyInterestRate = interestRate / 100
-        let monthlyPayment = loanAmount * (monthlyInterestRate / (1 - pow(1 + monthlyInterestRate, -Double(numberOfPayments))))
+        let monthlyInterestRate = interestRate / 100 / 12
+        
+        let monthlyPayment = calculateLoanPayment(loanAmount: loanAmount, interestRate: interestRate, loanDurationInMonths: numberOfPayments)
         
         for month in 1...numberOfPayments {
-            let interestPayment = remainingBalance * monthlyInterestRate / 12
+            let interestPayment = remainingBalance * monthlyInterestRate
             let principalPayment = monthlyPayment - interestPayment
             
             remainingBalance -= principalPayment
             
             let paymentDate = Date().addingTimeInterval(Double(month) * 30 * 24 * 60 * 60) // Assuming 30 days per month
             let alreadyPaid = loanAmount - remainingBalance
-            let remainingToBePaid = remainingBalance
+            let remainingToBePaid = remainingBalance + (remainingBalance * monthlyInterestRate * Double(numberOfPayments)) // Include the total interest in remaining balance
             let interestRateValue = interestRate
             
             let mortgageDetails = MortgageDetails(
@@ -500,12 +535,10 @@ struct ContentView: View {
     }
     
     func calculateLoan(completion: @escaping (Result<[MortgageDetails], Error>) -> Void) {
-        
-        let input = MortgageInput(
-            PropertyValue: cenaNemovitosti,
+        let input = LoanInput(
             LoanAmount: personalLoan,
             LoanTerm: selectedMonths,
-            InterestRate: interestRate
+            InterestRate: loanInterestRate
         )
         
         let loanAmount = input.LoanAmount
@@ -516,13 +549,13 @@ struct ContentView: View {
         
         var mortgageDetailsList = [MortgageDetails]() // Initialize an empty array
         
-        var remainingBalance = loanAmount
+        var remainingBalance = calculateTotalLoanPayment(loanAmount: personalLoan, interestRate: interestRate, loanDurationInMonths: selectedMonths)
         let monthlyInterestRate = interestRate / 100
-        let monthlyPayment = loanAmount * (monthlyInterestRate / (1 - pow(1 + monthlyInterestRate, -Double(numberOfPayments))))
+        let monthlyPayment = loanAmount / Double(numberOfPayments)
         
         for month in 1...numberOfPayments {
-            let interestPayment = remainingBalance * monthlyInterestRate / 12
-            let principalPayment = monthlyPayment - interestPayment
+            let interestPayment = remainingBalance * monthlyInterestRate
+            let principalPayment = monthlyPayment
             
             remainingBalance -= principalPayment
             
@@ -542,8 +575,23 @@ struct ContentView: View {
             mortgageDetailsList.append(mortgageDetails) // Add the MortgageDetails object to the array
         }
         
-        completion(.success(mortgageDetailsList)) // Return the array of MortgageDetails objects
+        personalLoanTotal = calculateLoanPayment(loanAmount: personalLoan, interestRate: interestRate, loanDurationInMonths: selectedMonths)
         
+        completion(.success(mortgageDetailsList)) // Return the array of MortgageDetails objects
+    }
+
+    func calculateLoanPayment(loanAmount: Double, interestRate: Double, loanDurationInMonths: Int) -> Double {
+        let monthlyInterestRate = interestRate / 100 / 12
+        let numerator = loanAmount * monthlyInterestRate * pow(1 + monthlyInterestRate, Double(loanDurationInMonths))
+        let denominator = pow(1 + monthlyInterestRate, Double(loanDurationInMonths)) - 1
+        let monthlyPayment = numerator / denominator
+        return monthlyPayment
+    }
+    
+    func calculateTotalLoanPayment(loanAmount: Double, interestRate: Double, loanDurationInMonths: Int) -> Double {
+        let monthlyInterestRate = interestRate / 100 / 12
+        let monthlyPayment = loanAmount * (monthlyInterestRate / (1 - pow(1 + monthlyInterestRate, -Double(loanDurationInMonths))))
+        return monthlyPayment * Double(loanDurationInMonths)
     }
     
     func calculateMortgagePaymentWithBanks(completion: @escaping (Result<[MortgagePaymentWithBankDetails], Error>) -> Void) {
@@ -596,31 +644,6 @@ struct ContentView: View {
         }
         
         typealias UIViewType = PieChartView
-    }
-    
-    struct MortgageDetails {
-        let paymentDate: Date
-        let alreadyPaid: Double
-        let remainingToBePaid: Double
-        let interestRateValue: Double
-        let monthlyPayment: Double?
-    }
-    
-    struct Bank: Codable {
-        let name: String
-        let interestRate: Double
-        let loanFee: Double
-        let sale: Double
-        let insurance: Double
-    }
-    
-    struct MortgagePaymentWithBankDetails: Codable {
-        let bank: Bank
-        let totalPayment: Double
-        let monthlyPayment: Double
-        let loanAmount: Double
-        let loanTerm: Double
-        let overPayment: Double
     }
     
     struct BankListView: View {
@@ -748,6 +771,31 @@ struct ContentView: View {
         }
     }
     
+    struct MortgageDetails {
+        let paymentDate: Date
+        let alreadyPaid: Double
+        let remainingToBePaid: Double
+        let interestRateValue: Double
+        let monthlyPayment: Double?
+    }
+    
+    struct Bank: Codable {
+        let name: String
+        let interestRate: Double
+        let loanFee: Double
+        let sale: Double
+        let insurance: Double
+    }
+    
+    struct MortgagePaymentWithBankDetails: Codable {
+        let bank: Bank
+        let totalPayment: Double
+        let monthlyPayment: Double
+        let loanAmount: Double
+        let loanTerm: Double
+        let overPayment: Double
+    }
+    
     struct MortgageInput: Codable {
         let PropertyValue: Double
         let LoanAmount: Double
@@ -764,6 +812,7 @@ struct ContentView: View {
     struct MortgageResult: Codable {
         let mortgagePayment: Double
     }
+    
     struct LoanResult: Codable {
         let mortgagePayment: Double
     }
