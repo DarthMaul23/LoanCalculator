@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		061251C215E1C0E5B9B1E776 /* Pods_Loan_Calculator_Loan_CalculatorUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF3271CD8308DA29424DD663 /* Pods_Loan_Calculator_Loan_CalculatorUITests.framework */; };
+		0D70DE182A2C928000316B12 /* MortgageCalculationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D70DE172A2C928000316B12 /* MortgageCalculationView.swift */; };
+		0D70DE1A2A2C92B400316B12 /* DataStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D70DE192A2C92B400316B12 /* DataStructures.swift */; };
+		0D70DE1C2A2C967300316B12 /* PieChartWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D70DE1B2A2C967300316B12 /* PieChartWrapper.swift */; };
+		0D70DE1E2A2C975C00316B12 /* LineChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D70DE1D2A2C975C00316B12 /* LineChartView.swift */; };
+		0D70DE202A2C981A00316B12 /* DataComputer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D70DE1F2A2C981A00316B12 /* DataComputer.swift */; };
 		0DB8C7B62A1CEB1A009EC720 /* Loan_CalculatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB8C7B52A1CEB1A009EC720 /* Loan_CalculatorApp.swift */; };
 		0DB8C7B82A1CEB1A009EC720 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB8C7B72A1CEB1A009EC720 /* ContentView.swift */; };
 		0DB8C7BA2A1CEB1B009EC720 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0DB8C7B92A1CEB1B009EC720 /* Assets.xcassets */; };
@@ -38,6 +43,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0D70DE172A2C928000316B12 /* MortgageCalculationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MortgageCalculationView.swift; sourceTree = "<group>"; };
+		0D70DE192A2C92B400316B12 /* DataStructures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructures.swift; sourceTree = "<group>"; };
+		0D70DE1B2A2C967300316B12 /* PieChartWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieChartWrapper.swift; sourceTree = "<group>"; };
+		0D70DE1D2A2C975C00316B12 /* LineChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineChartView.swift; sourceTree = "<group>"; };
+		0D70DE1F2A2C981A00316B12 /* DataComputer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataComputer.swift; sourceTree = "<group>"; };
 		0DB8C7B22A1CEB1A009EC720 /* Loan Calculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Loan Calculator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DB8C7B52A1CEB1A009EC720 /* Loan_CalculatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loan_CalculatorApp.swift; sourceTree = "<group>"; };
 		0DB8C7B72A1CEB1A009EC720 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -118,6 +128,11 @@
 				0DB8C7B92A1CEB1B009EC720 /* Assets.xcassets */,
 				0DB8C7BB2A1CEB1B009EC720 /* Preview Content */,
 				0DB8C7DF2A1D286B009EC720 /* Formater.swift */,
+				0D70DE172A2C928000316B12 /* MortgageCalculationView.swift */,
+				0D70DE192A2C92B400316B12 /* DataStructures.swift */,
+				0D70DE1B2A2C967300316B12 /* PieChartWrapper.swift */,
+				0D70DE1D2A2C975C00316B12 /* LineChartView.swift */,
+				0D70DE1F2A2C981A00316B12 /* DataComputer.swift */,
 			);
 			path = "Loan Calculator";
 			sourceTree = "<group>";
@@ -157,7 +172,6 @@
 				BCB7658DCD1E8DF28D08BEDB /* Pods-Loan CalculatorTests.debug.xcconfig */,
 				A8CC74805D2696EE2522213E /* Pods-Loan CalculatorTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -409,8 +423,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0D70DE182A2C928000316B12 /* MortgageCalculationView.swift in Sources */,
+				0D70DE1C2A2C967300316B12 /* PieChartWrapper.swift in Sources */,
+				0D70DE1A2A2C92B400316B12 /* DataStructures.swift in Sources */,
+				0D70DE1E2A2C975C00316B12 /* LineChartView.swift in Sources */,
 				0DB8C7B82A1CEB1A009EC720 /* ContentView.swift in Sources */,
 				0DB8C7B62A1CEB1A009EC720 /* Loan_CalculatorApp.swift in Sources */,
+				0D70DE202A2C981A00316B12 /* DataComputer.swift in Sources */,
 				0DB8C7E02A1D286B009EC720 /* Formater.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
