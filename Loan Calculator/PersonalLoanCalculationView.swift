@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct MortgageCalculationView: View {
-    @Binding var isShowingModal: Bool
+struct PersonalLoanCalculationView: View {
+    @Binding var isShowingModal2: Bool
     var mortgageDetailsList: [MortgageDetails]
     var vyseUveru2: Double
     var selectedMonths: Int
@@ -30,7 +30,7 @@ struct MortgageCalculationView: View {
                     Text("Total Paid Amount: \(_totalPayment, specifier: "%.2f")")
                     Text("Interest Rate: \(loanInterestRate, specifier: "%.2f")%")
                     Text("Interest Paid: \(round(_totalPayment-vyseUveru2), specifier: "%.2f")")
-                    Text("Duration: \(selectedMonths) months")
+                    Text("Duration: \(selectedMonths) years")
                 }
                 .font(.subheadline)
                 .padding(.top, 20)
@@ -80,7 +80,7 @@ struct MortgageCalculationView: View {
             }
         }
         .onDisappear {
-            self.isShowingModal = false
+            self.isShowingModal2 = false
         }
     }
     
@@ -100,8 +100,8 @@ struct MortgageCalculationView: View {
     }
 }
 
-struct MortgageCalculationView_Previews: PreviewProvider {
+struct PersonalLoanCalculationView_Previews: PreviewProvider {
     static var previews: some View {
-        MortgageCalculationView(isShowingModal: .constant(true), mortgageDetailsList: [], vyseUveru2: 3500000, selectedMonths: 360, loanInterestRate: 2.75)
+    PersonalLoanCalculationView(isShowingModal2: .constant(true), mortgageDetailsList: [], vyseUveru2: 150000, selectedMonths: 12, loanInterestRate: 2.7)
     }
 }

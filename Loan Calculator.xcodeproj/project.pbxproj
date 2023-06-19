@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		061251C215E1C0E5B9B1E776 /* Pods_Loan_Calculator_Loan_CalculatorUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF3271CD8308DA29424DD663 /* Pods_Loan_Calculator_Loan_CalculatorUITests.framework */; };
+		0D1532942A3F0E19004F0A54 /* MortgageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1532932A3F0E19004F0A54 /* MortgageView.swift */; };
+		0D1532962A3F0E54004F0A54 /* PersonalLoanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1532952A3F0E54004F0A54 /* PersonalLoanView.swift */; };
+		0D1532982A3F0E81004F0A54 /* DataTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1532972A3F0E81004F0A54 /* DataTableView.swift */; };
+		0D15329A2A3F16EA004F0A54 /* PersonalLoanCalculationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1532992A3F16EA004F0A54 /* PersonalLoanCalculationView.swift */; };
 		0D70DE182A2C928000316B12 /* MortgageCalculationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D70DE172A2C928000316B12 /* MortgageCalculationView.swift */; };
 		0D70DE1A2A2C92B400316B12 /* DataStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D70DE192A2C92B400316B12 /* DataStructures.swift */; };
 		0D70DE1C2A2C967300316B12 /* PieChartWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D70DE1B2A2C967300316B12 /* PieChartWrapper.swift */; };
@@ -43,6 +47,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0D1532932A3F0E19004F0A54 /* MortgageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MortgageView.swift; sourceTree = "<group>"; };
+		0D1532952A3F0E54004F0A54 /* PersonalLoanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalLoanView.swift; sourceTree = "<group>"; };
+		0D1532972A3F0E81004F0A54 /* DataTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTableView.swift; sourceTree = "<group>"; };
+		0D1532992A3F16EA004F0A54 /* PersonalLoanCalculationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalLoanCalculationView.swift; sourceTree = "<group>"; };
 		0D70DE172A2C928000316B12 /* MortgageCalculationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MortgageCalculationView.swift; sourceTree = "<group>"; };
 		0D70DE192A2C92B400316B12 /* DataStructures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructures.swift; sourceTree = "<group>"; };
 		0D70DE1B2A2C967300316B12 /* PieChartWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieChartWrapper.swift; sourceTree = "<group>"; };
@@ -133,6 +141,10 @@
 				0D70DE1B2A2C967300316B12 /* PieChartWrapper.swift */,
 				0D70DE1D2A2C975C00316B12 /* LineChartView.swift */,
 				0D70DE1F2A2C981A00316B12 /* DataComputer.swift */,
+				0D1532932A3F0E19004F0A54 /* MortgageView.swift */,
+				0D1532952A3F0E54004F0A54 /* PersonalLoanView.swift */,
+				0D1532972A3F0E81004F0A54 /* DataTableView.swift */,
+				0D1532992A3F16EA004F0A54 /* PersonalLoanCalculationView.swift */,
 			);
 			path = "Loan Calculator";
 			sourceTree = "<group>";
@@ -423,7 +435,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0D1532942A3F0E19004F0A54 /* MortgageView.swift in Sources */,
 				0D70DE182A2C928000316B12 /* MortgageCalculationView.swift in Sources */,
+				0D1532962A3F0E54004F0A54 /* PersonalLoanView.swift in Sources */,
+				0D1532982A3F0E81004F0A54 /* DataTableView.swift in Sources */,
+				0D15329A2A3F16EA004F0A54 /* PersonalLoanCalculationView.swift in Sources */,
 				0D70DE1C2A2C967300316B12 /* PieChartWrapper.swift in Sources */,
 				0D70DE1A2A2C92B400316B12 /* DataStructures.swift in Sources */,
 				0D70DE1E2A2C975C00316B12 /* LineChartView.swift in Sources */,
@@ -596,8 +612,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -626,8 +642,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

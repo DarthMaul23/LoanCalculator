@@ -15,6 +15,7 @@ struct PieChartWrapper: UIViewRepresentable {
     
     func makeUIView(context: Context) -> PieChartView {
         let chartView = PieChartView()
+        chartView.rotationEnabled = false
         return chartView
     }
     
